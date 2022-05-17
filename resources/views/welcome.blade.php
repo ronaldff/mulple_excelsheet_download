@@ -46,6 +46,11 @@
 <body>
 
   <button class="btn-submit" id="btn-export" onclick="getHTMLSplit();">Customer Export</button>
+
+  {{-- <button class="btn-submit" id="btn-export" onclick="getZip();">Customer Export Zip</button> --}}
+
+  <a href="{{ route('export_customer_zip') }}"> <button class="btn-submit" id="btn-export">Customer Export Zip</button></a>
+  
 </body>
 
 </html>
@@ -53,6 +58,21 @@
 <script src='js/jquery-3.2.1.min.js'></script>
 
 <script type="text/javascript">
+  // customer zip
+  function getZip()
+  {
+    $.ajax({
+      url : "{{ route('export_customer_zip') }}",
+      headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+      }
+      , type: 'POST'
+      , success: function(response) {
+        console.log(response)
+      }
+    })
+  }
+
   function getHTMLSplit() {
 
     $.ajax({

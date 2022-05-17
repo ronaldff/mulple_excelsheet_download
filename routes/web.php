@@ -16,6 +16,8 @@ use App\Http\Controllers\CustomerController;
 
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('welcome');
 
 Route::post('export', [CustomerController::class, 'export'])->name('export_customer');
+
+Route::get('export_zip', [CustomerController::class, 'export_zip'])->name('export_customer_zip');

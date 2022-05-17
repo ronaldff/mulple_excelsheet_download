@@ -6,6 +6,11 @@ use Illuminate\Http\Request;
 use App\Exports\CustomersExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\Customer;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use File;
+use ZipArchive;
+use Response;
 
 class CustomerController extends Controller
 {
@@ -51,4 +56,60 @@ class CustomerController extends Controller
         // die();
         // return Excel::download(new CustomersExport, 'customers.xlsx');
     }
+
+    public function export_zip(Request $request)
+    {
+        $public_dir=public_path();
+        $path = $public_dir.'/' . 'file_storage/';
+        File::makeDirectory($path, $mode = 0777, true, true);
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $result = Customer::all()->toArray();
+        $chunckRes = array_chunk($result,100);
+        $sheet->setCellValue('A1' , 'NAME');
+        $sheet->setCellValue('E1', 'EMAIL ADDRESS');
+        foreach ($chunckRes as $k =>$v) {
+            $rand = rand(1111,9999); 
+            $j = 0;
+            $sd = 2;
+            foreach($v as $z){
+                $sheet->setCellValue('A'.$sd , $v[$j]['name']);
+                $sheet->setCellValue('E'.$sd , $v[$j]['email']);
+                $writer = new Xlsx($spreadsheet);
+                $writer->save($path . 'Customer_'.$rand.'.xlsx');
+                $j++;
+                $sd++;
+            }
+
+            $k++;
+
+        }
+
+        $zip = new ZipArchive;
+        $fileName = time().".zip";
+       if ($zip->open(public_path($fileName), ZipArchive::CREATE) === TRUE)
+       {
+           $files = File::files($path);
+           foreach ($files as  $value) {
+               $relativeNameInZipFile = basename($value);
+               $zip->addFile($value, $relativeNameInZipFile);
+           }
+           $zip->close();
+       }
+
+        $headers = array(
+            'Content-Type' => 'application/octet-stream',
+        );
+        
+        $filetopath=$public_dir.'/'.$fileName;
+        if(file_exists($filetopath)){
+            File::deleteDirectory($path);
+            return Response::download($filetopath,$fileName,$headers);
+        }
+
+        // unlink($filetopath);
+        return view('welcome');
+               
+    }
+
 }

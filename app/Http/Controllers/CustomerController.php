@@ -104,12 +104,9 @@ class CustomerController extends Controller
         $filetopath=$public_dir.'/'.$fileName;
         if(file_exists($filetopath)){
             File::deleteDirectory($path);
-            return Response::download($filetopath,$fileName,$headers);
+            return Response::download($filetopath,$fileName,$headers)->deleteFileAfterSend(true);
         }
-
-        // unlink($filetopath);
         return view('welcome');
-               
     }
 
 }
